@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// Models
+// ============================================
+
+model Playlist {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  mood        String
+  genres      String[] @default([])
+  energyLevel String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tracks PlaylistTrack[]
+
+  @@index([mood])
+  @@index([createdAt])
+  @@map("playlists")
+}
+
+model Track {
+  id           String   @id
+  name          String
+  artists       String[] @default([])
+  album         String
+  albumImageUrl String?
+  durationMs    Int
+  spotifyUrl    String
+  previewUrl    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  playlistTracks PlaylistTrack[]
+
+  @@index([name])
+  @@map("tracks")
+}
+
+model PlaylistTrack {
+  id         String   @id @default(uuid())
+  playlistId String
+  trackId    String
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  track    Track    @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, trackId])
+  @@index([playlistId])
+  @@index([trackId])
+  @@map("playlist_tracks")
+}
