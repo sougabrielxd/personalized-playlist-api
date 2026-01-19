@@ -4,6 +4,8 @@ services:
     container_name: personalized-playlist-db
     restart: unless-stopped
     environment:
+      # IMPORTANT: Set POSTGRES_PASSWORD in your .env file (never commit .env!)
+      # The default 'postgres' is only for local development
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-personalized_playlist_db}
