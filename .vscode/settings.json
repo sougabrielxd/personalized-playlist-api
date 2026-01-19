@@ -1,0 +1,10 @@
+{
+  "prisma.showPrismaDataPlatformNotification": false,
+  "files.associations": {
+    "*.prisma": "prisma"
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma",
+    "editor.formatOnSave": true
+  }
+}

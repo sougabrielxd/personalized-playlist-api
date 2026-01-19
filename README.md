@@ -46,9 +46,9 @@ POST /api/playlists/generate
 ## 🛠️ Project Setup
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js (v18 or higher) **OR** Docker (v20+)
 - pnpm (or npm/yarn)
-- PostgreSQL database
+- PostgreSQL database **OR** Docker Compose
 - Spotify Developer Account (for API credentials)
 
 ### Installation
@@ -84,6 +84,93 @@ pnpm start:dev
 # Production
 pnpm build
 pnpm start:prod
+```
+
+---
+
+## 🐳 Docker Setup
+
+### Prerequisites
+- Docker (v20 or higher)
+- Docker Compose (v2 or higher)
+
+### Quick Start with Docker Compose
+
+1. Configure environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your credentials
+```
+
+2. Start all services (app + PostgreSQL):
+```bash
+# Production
+docker-compose up -d
+
+# Development (with hot reload)
+docker-compose -f docker-compose.dev.yml up
+```
+
+3. Run database migrations:
+```bash
+docker-compose exec app pnpm prisma migrate deploy
+```
+
+4. Access the application:
+- **API**: `http://localhost:3000`
+- **Swagger**: `http://localhost:3000/docs`
+- **Health Check**: `http://localhost:3000/health`
+
+### Docker Commands
+
+```bash
+# Build and start containers
+docker-compose up -d
+
+# View logs
+docker-compose logs -f app
+
+# Stop containers
+docker-compose down
+
+# Stop and remove volumes (⚠️ deletes database data)
+docker-compose down -v
+
+# Rebuild containers
+docker-compose build --no-cache
+
+# Execute commands in container
+docker-compose exec app pnpm prisma studio
+docker-compose exec app pnpm prisma migrate dev
+```
+
+### Development Mode
+
+For development with hot reload and debugging:
+
+```bash
+docker-compose -f docker-compose.dev.yml up
+```
+
+This will:
+- Mount your local code as a volume
+- Enable hot reload
+- Expose debug port (9229)
+- Use development dependencies
+
+### Building Docker Image Manually
+
+```bash
+# Build production image
+docker build -t personalized-playlist-api:latest .
+
+# Run container
+docker run -p 3000:3000 \
+  -e DATABASE_URL="postgresql://..." \
+  -e SPOTIFY_CLIENT_ID="..." \
+  -e SPOTIFY_CLIENT_SECRET="..." \
+  -e API_KEY="..." \
+  personalized-playlist-api:latest
 ```
 
 ---
