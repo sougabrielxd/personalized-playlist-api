@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+# Old project folder (to be removed)
+/personalized-playlist-api
+
 # Logs
 logs
 *.log
