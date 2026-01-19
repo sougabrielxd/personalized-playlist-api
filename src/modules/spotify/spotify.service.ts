@@ -24,7 +24,7 @@ export class SpotifyService implements OnModuleInit {
     });
   }
 
-  async onModuleInit() {
+  onModuleInit() {
     // Don't authenticate on startup - authenticate lazily when needed
     // This allows the app to start even if Spotify credentials are not configured
     this.logger.log('Spotify service initialized');
@@ -47,9 +47,7 @@ export class SpotifyService implements OnModuleInit {
    */
   private async ensureAuthenticated(): Promise<void> {
     const clientId = this.configService.get<string>('app.spotify.clientId');
-    const clientSecret = this.configService.get<string>(
-      'app.spotify.clientSecret',
-    );
+    const clientSecret = this.configService.get<string>('app.spotify.clientSecret');
 
     if (!clientId || !clientSecret) {
       throw new Error('Spotify credentials are not configured');
@@ -70,9 +68,7 @@ export class SpotifyService implements OnModuleInit {
     }
 
     try {
-      const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
-        'base64',
-      );
+      const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
 
       const response = await axios.post<SpotifyTokenResponse>(
         this.tokenUrl,
@@ -87,13 +83,21 @@ export class SpotifyService implements OnModuleInit {
 
       this.accessToken = response.data.access_token;
       // Set expiration time (subtract 60 seconds as buffer)
-      this.tokenExpiresAt =
-        Date.now() + (response.data.expires_in - 60) * 1000;
+      this.tokenExpiresAt = Date.now() + (response.data.expires_in - 60) * 1000;
 
       this.logger.log('Successfully authenticated with Spotify API');
-    } catch (error: any) {
-      if (error.response?.status === 400) {
-        const errorData = error.response.data;
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'status' in error.response &&
+        error.response.status === 400
+      ) {
+        const errorResponse = error.response as { data?: { error?: string } };
+        const errorData = errorResponse.data;
         if (errorData?.error === 'invalid_client') {
           this.logger.error(
             'Invalid Spotify credentials. Please check your SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .env file',
@@ -119,20 +123,17 @@ export class SpotifyService implements OnModuleInit {
     const token = await this.getAccessToken();
 
     try {
-      const response = await axios.get<SpotifySearchResponse>(
-        `${this.baseUrl}/search`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: {
-            q: query,
-            type: 'track',
-            limit,
-            offset,
-          },
+      const response = await axios.get<SpotifySearchResponse>(`${this.baseUrl}/search`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        params: {
+          q: query,
+          type: 'track',
+          limit,
+          offset,
+        },
+      });
 
       return response.data.tracks.items;
     } catch (error) {
@@ -144,9 +145,7 @@ export class SpotifyService implements OnModuleInit {
   /**
    * Get track recommendations based on parameters
    */
-  async getRecommendations(
-    params: SpotifyRecommendationsParams,
-  ): Promise<SpotifyTrack[]> {
+  async getRecommendations(params: SpotifyRecommendationsParams): Promise<SpotifyTrack[]> {
     const token = await this.getAccessToken();
 
     try {
@@ -177,14 +176,11 @@ export class SpotifyService implements OnModuleInit {
     const token = await this.getAccessToken();
 
     try {
-      const response = await axios.get<SpotifyTrack>(
-        `${this.baseUrl}/tracks/${trackId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await axios.get<SpotifyTrack>(`${this.baseUrl}/tracks/${trackId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       return response.data;
     } catch (error) {

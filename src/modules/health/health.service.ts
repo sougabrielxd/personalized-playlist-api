@@ -33,8 +33,7 @@ export class HealthService {
     const databaseCheck = await this.checkDatabase();
     const spotifyCheck = this.checkSpotify();
 
-    const overallStatus =
-      databaseCheck.status === 'up' ? 'ok' : 'error';
+    const overallStatus = databaseCheck.status === 'up' ? 'ok' : 'error';
 
     return {
       status: overallStatus,
@@ -75,13 +74,10 @@ export class HealthService {
     status: 'configured' | 'not_configured';
   } {
     const clientId = this.configService.get<string>('app.spotify.clientId');
-    const clientSecret = this.configService.get<string>(
-      'app.spotify.clientSecret',
-    );
+    const clientSecret = this.configService.get<string>('app.spotify.clientSecret');
 
     return {
-      status:
-        clientId && clientSecret ? 'configured' : 'not_configured',
+      status: clientId && clientSecret ? 'configured' : 'not_configured',
     };
   }
 }

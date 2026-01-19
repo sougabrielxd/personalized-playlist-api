@@ -64,8 +64,7 @@ For issues, questions, or feature requests, please contact the API administrator
         type: 'apiKey',
         name: 'X-API-Key',
         in: 'header',
-        description:
-          'Enter your API key. You can get your API key from the API administrator.',
+        description: 'Enter your API key. You can get your API key from the API administrator.',
       },
       'api-key',
     )
@@ -75,8 +74,7 @@ For issues, questions, or feature requests, please contact the API administrator
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    operationIdFactory: (controllerKey: string, methodKey: string) =>
-      methodKey,
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   });
 
   SwaggerModule.setup('docs', app, document, {
@@ -99,7 +97,7 @@ For issues, questions, or feature requests, please contact the API administrator
       requestSnippetsEnabled: true,
       requestSnippets: {
         generators: {
-          'curl': {
+          curl: {
             title: 'cURL',
           },
         },
@@ -110,14 +108,30 @@ For issues, questions, or feature requests, please contact the API administrator
   });
 
   // Also setup JSON and YAML endpoints
-  app.getHttpAdapter().get('/docs/json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(document);
-  });
+  app
+    .getHttpAdapter()
+    .get(
+      '/docs/json',
+      (
+        req: unknown,
+        res: { setHeader: (key: string, value: string) => void; send: (data: unknown) => void },
+      ) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(document);
+      },
+    );
 
-  app.getHttpAdapter().get('/docs/yaml', (req, res) => {
-    res.setHeader('Content-Type', 'application/yaml');
-    // Convert JSON to YAML (you might want to use a library like js-yaml)
-    res.send(JSON.stringify(document, null, 2));
-  });
+  app
+    .getHttpAdapter()
+    .get(
+      '/docs/yaml',
+      (
+        req: unknown,
+        res: { setHeader: (key: string, value: string) => void; send: (data: string) => void },
+      ) => {
+        res.setHeader('Content-Type', 'application/yaml');
+        // Convert JSON to YAML (you might want to use a library like js-yaml)
+        res.send(JSON.stringify(document, null, 2));
+      },
+    );
 }

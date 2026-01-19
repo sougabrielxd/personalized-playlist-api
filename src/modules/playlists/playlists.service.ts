@@ -3,7 +3,10 @@ import { SpotifyService } from '../spotify/spotify.service';
 import { GeneratePlaylistDto, Mood, EnergyLevel } from './dto/generate-playlist.dto';
 import { Playlist } from './entities/playlist.entity';
 import { TrackDto } from './dto/playlist-response.dto';
-import { SpotifyTrack } from '../spotify/interfaces/spotify.interface';
+import {
+  SpotifyTrack,
+  SpotifyRecommendationsParams,
+} from '../spotify/interfaces/spotify.interface';
 
 @Injectable()
 export class PlaylistsService {
@@ -41,30 +44,21 @@ export class PlaylistsService {
       const spotifyParams = this.mapToSpotifyParams(dto);
 
       // Get recommended tracks from Spotify
-      const recommendedTracks = await this.spotifyService.getRecommendations(
-        spotifyParams,
-      );
+      const recommendedTracks = await this.spotifyService.getRecommendations(spotifyParams);
 
       // If we need more tracks or want specific duration, search for additional tracks
       let tracks = recommendedTracks;
       const targetDuration = dto.duration ? dto.duration * 60 * 1000 : null;
 
       if (targetDuration) {
-        tracks = await this.adjustPlaylistDuration(
-          recommendedTracks,
-          targetDuration,
-          dto,
-        );
+        tracks = await this.adjustPlaylistDuration(recommendedTracks, targetDuration, dto);
       }
 
       // Convert Spotify tracks to DTOs
       const trackDtos = this.mapTracksToDto(tracks);
 
       // Calculate total duration
-      const totalDurationMs = trackDtos.reduce(
-        (sum, track) => sum + track.durationMs,
-        0,
-      );
+      const totalDurationMs = trackDtos.reduce((sum, track) => sum + track.durationMs, 0);
 
       // Generate playlist name and description
       const name = this.generatePlaylistName(dto);
@@ -90,8 +84,8 @@ export class PlaylistsService {
   /**
    * Map user preferences to Spotify recommendation parameters
    */
-  private mapToSpotifyParams(dto: GeneratePlaylistDto) {
-    const params: any = {
+  private mapToSpotifyParams(dto: GeneratePlaylistDto): SpotifyRecommendationsParams {
+    const params: SpotifyRecommendationsParams = {
       limit: 20,
     };
 
@@ -206,9 +200,10 @@ export class PlaylistsService {
       [Mood.CHILL]: 'Chill',
     };
 
-    const genrePart = dto.genres && dto.genres.length > 0
-      ? dto.genres[0].charAt(0).toUpperCase() + dto.genres[0].slice(1)
-      : 'Music';
+    const genrePart =
+      dto.genres && dto.genres.length > 0
+        ? dto.genres[0].charAt(0).toUpperCase() + dto.genres[0].slice(1)
+        : 'Music';
 
     return `${moodNames[dto.mood]} ${genrePart} Playlist`;
   }
